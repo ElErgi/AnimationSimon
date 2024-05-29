@@ -20,6 +20,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonGreen: Button
     private lateinit var textWin: TextView
     private lateinit var textLose: TextView
+    private lateinit var textCurrentScore: TextView
+    private lateinit var textHighScore: TextView
+
+    private var currentScore = 0
+    private var highScore = 0
+    private lateinit var dbHelper: ScoreDatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +38,12 @@ class MainActivity : AppCompatActivity() {
         buttonGreen = findViewById(R.id.buttonGreen)
         textWin = findViewById(R.id.textWin)
         textLose = findViewById(R.id.textLose)
+        textCurrentScore = findViewById(R.id.textCurrentScore)
+        textHighScore = findViewById(R.id.textHighScore)
+
+        dbHelper = ScoreDatabaseHelper(this)
+        highScore = dbHelper.getHighScore()
+        updateHighScoreText()
 
         // Inicializar el SoundManager con los recursos de sonido asociados a cada botón
         soundManager = SoundManager(this, listOf(R.raw.fa, R.raw.gb4, R.raw.la, R.raw.mi))
@@ -41,8 +53,32 @@ class MainActivity : AppCompatActivity() {
         buttonClickListener.setButtonClickListeners()
     }
 
+    fun incrementScore() {
+        currentScore++
+        updateCurrentScoreText()
+        if (currentScore > highScore) {
+            highScore = currentScore
+            dbHelper.updateHighScore(highScore)
+            updateHighScoreText()
+        }
+    }
+
+    fun resetScore() {
+        currentScore = 0
+        updateCurrentScoreText()
+    }
+
+    private fun updateCurrentScoreText() {
+        textCurrentScore.text = "Score: $currentScore"
+    }
+
+    private fun updateHighScoreText() {
+        textHighScore.text = "High Score: $highScore"
+    }
+
     fun showWinMessage() {
         textWin.visibility = View.VISIBLE
+        incrementScore()
     }
 
     fun hideWinMessage() {
@@ -50,6 +86,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun showLoseMessage() {
+        resetScore()
         animateLoseMessage()
     }
 
